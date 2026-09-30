@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>万春亭盘龙藻井 · WebAR浑天仪</title>
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif}a-scene{position:fixed;inset:0}.panel{position:fixed;z-index:10;left:14px;right:14px;top:14px;text-align:center;color:#fff;pointer-events:none}.title{font-size:18px;font-weight:700;text-shadow:0 2px 8px #000}.sub{font-size:12px;color:#e7d9b4;margin-top:5px;text-shadow:0 2px 6px #000}.status{display:inline-block;margin-top:9px;padding:7px 12px;border-radius:99px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);font-size:11px}.help{position:fixed;z-index:10;left:50%;transform:translateX(-50%);bottom:20px;width:calc(100% - 40px);max-width:420px;text-align:center;color:#eee;font-size:12px;line-height:1.6;text-shadow:0 2px 6px #000;pointer-events:none}.btn{pointer-events:auto;margin-top:10px;border:1px solid #d6b55d;background:rgba(38,27,12,.82);color:#f8e4ad;border-radius:999px;padding:10px 18px}.error{position:fixed;inset:0;z-index:30;background:#111;color:#fff;padding:28px;display:none}
+</style></head>
+<body>
+<div class="panel"><div class="title">万春亭盘龙藻井 · AR浑天仪</div><div class="sub">对准藻井图像，等待识别后模型将从藻井中心浮起</div><div id="status" class="status">正在初始化 AR…</div></div>
+<div class="help">请保持手机稳定并让整幅藻井进入画面。识别后不要遮挡中心区域。</div>
+<div id="error" class="error"><h2>需要先生成 targets.mind</h2><p>请打开项目中的 compile_target.html，选择 caijing_target.jpg，生成 targets.mind，再重新打开本页面。</p></div>
+<a-scene id="scene" mindar-image="imageTargetSrc: targets.mind; autoStart: true; uiLoading: no; uiScanning: no; uiError: no" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights: true; antialias: true" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+<a-assets><a-asset-item id="huntian" src="huntianyi_ar.glb"></a-asset-item></a-assets>
+<a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+<a-entity id="target" mindar-image-target="targetIndex: 0">
+  <a-entity id="arRoot" position="0 0 0.12" scale="0.075 0.075 0.075" visible="false">
+    <a-gltf-model src="#huntian" position="0 0 0" rotation="0 0 0"></a-gltf-model>
+    <a-torus id="starRing" radius="3.35" radius-tubular="0.018" segments-tubular="96" segments-radial="8" material="color:#78c7ff; emissive:#2f9cff; emissiveIntensity:0.8; transparent:true; opacity:0.65" rotation="0 0 0"></a-torus>
+    <a-torus radius="4.7" radius-tubular="0.025" segments-tubular="96" segments-radial="8" material="color:#e7b84d; metalness:0.85; roughness:0.25"></a-torus>
+    <a-sphere radius="0.30" material="color:#dcecff; emissive:#b8d8ff; emissiveIntensity:1.5; metalness:0.7; roughness:0.12" animation="property:rotation;to:0 360 360;dur:12000;loop:true;easing:linear"></a-sphere>
+  </a-entity>
+</a-entity></a-scene>
+<script>
+const status=document.getElementById('status'), root=document.getElementById('arRoot'), target=document.getElementById('target'), scene=document.getElementById('scene');
+let timer;
+function setStatus(t){status.textContent=t;}
+scene.addEventListener('loaded',()=>setStatus('请将手机对准藻井图像'));
+target.addEventListener('targetFound',()=>{setStatus('识别成功 · 藻井正在苏醒');root.setAttribute('visible',true);root.setAttribute('animation__rise','property:position;to:0 0 0.42;dur:1800;easing:easeOutCubic');root.setAttribute('animation__scale','property:scale;to:0.095 0.095 0.095;dur:2200;easing:easeOutCubic');setTimeout(()=>setStatus('浑天仪已激活 · 24节气 / 28星宿'),2200)});
+target.addEventListener('targetLost',()=>{setStatus('目标暂时丢失 · 请重新对准藻井');root.setAttribute('visible',false);root.removeAttribute('animation__rise');root.removeAttribute('animation__scale');});
+window.addEventListener('error',e=>{if(String(e.message).includes('targets.mind'))document.getElementById('error').style.display='block';});
+</script></body></html>
